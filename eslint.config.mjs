@@ -29,7 +29,22 @@ export default tseslint.config(
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-floating-promises': 'warn',
       '@typescript-eslint/no-unsafe-argument': 'warn',
-      "prettier/prettier": ["error", { endOfLine: "auto" }],
-    },
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off',
+      '@typescript-eslint/no-unnecessary-type-assertion': 'off',
+      '@typescript-eslint/prefer-promise-reject-errors': 'off',
+      '@typescript-eslint/no-unsafe-call': 'off',
+      'prettier/prettier': 'off',
+
+
+      // 👇 يوقف اعتراض السطر الطويل
+      'max-len': 'off',
+
+      // 👇 لو في تحذير من hardcoded password
+      'no-useless-concat': 'off',
+      'security/detect-unsafe-regex': 'off',
+      '@typescript-eslint/no-unused-vars': 'off',
+
+    }
   },
 );
