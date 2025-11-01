@@ -6,11 +6,13 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { RegisterDto } from '../auth/dto/register.dto';
 
+
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+
   ) {}
   create(data: RegisterDto) {
     const user = this.userRepository.create(data);
@@ -21,6 +23,20 @@ export class UserService {
     return this.userRepository.findOneBy({ email });
   }
 
+
+
+  async findOneByUuid(uuid: string) {
+    const user  = await this.userRepository.findOneBy({ uuid });
+    if (!user) throw new NotFoundException("User not found");
+    return user;
+  }
+
+  async verifyEmail(uuid: string) {
+    const user = await this.findOneByUuid(uuid);
+    user.verifiedAt = new Date();
+    return this.userRepository.save(user);
+  }
+
   update(id: number, updateUserDto: UpdateUserDto) {
     return `This action updates a #${id} user`;
   }
@@ -28,4 +44,6 @@ export class UserService {
   remove(id: number) {
     return `This action removes a #${id} user`;
   }
+
+
 }

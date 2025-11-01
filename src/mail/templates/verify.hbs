@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Verify Your Account</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+      background-color: #f6f9fc;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 520px;
+      margin: 40px auto;
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      padding: 40px 30px;
+      text-align: center;
+    }
+
+    h2 {
+      color: #333;
+      font-size: 22px;
+      margin-bottom: 10px;
+    }
+
+    p {
+      color: #555;
+      font-size: 15px;
+      line-height: 1.6;
+      margin: 0 0 20px;
+    }
+
+    a.button {
+      display: inline-block;
+      background-color: #007bff;
+      color: #ffffff !important;
+      text-decoration: none;
+      font-weight: 600;
+      padding: 12px 28px;
+      border-radius: 8px;
+      margin-top: 15px;
+      transition: 0.2s ease-in-out;
+    }
+
+    a.button:hover {
+      background-color: #0056b3;
+    }
+
+    .footer {
+      font-size: 13px;
+      color: #999;
+      margin-top: 25px;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h2>Welcome, {{name}} 👋</h2>
+  <p>Thank you for signing up! Please verify your email address to activate your account.</p>
+  <p>
+    <a href="{{verifyLink}}" class="button">Verify My Account</a>
+  </p>
+  <p>If you didn’t create this account, you can safely ignore this email.</p>
+
+  <div class="footer">
+    <p>© {{year}} Online Courses. All rights reserved.</p>
+  </div>
+</div>
+</body>
+</html>

@@ -3,15 +3,18 @@ import {
   CanActivate,
   ExecutionContext,
   UnauthorizedException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { Request } from 'express';
 import { JwtService } from '@nestjs/jwt';
 import { IUserPayload } from '../types/express';
+import { UserService } from '../../user/user.service';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
   constructor(
-    private jwtService: JwtService
+    private jwtService: JwtService,
+    private userService: UserService,
   ) {
   }
   async canActivate(
@@ -31,9 +34,19 @@ export class AuthGuard implements CanActivate {
         email: decodedUser.email,
         role: decodedUser.role,
       } as IUserPayload;
+
+      const user = await this.userService.findOneByUuid(decodedUser.uuid);
+      console.log(user);
+      if (!user.verifiedAt) {
+        throw new ForbiddenException('User account not verified');
+      }
+
     }
-    catch {
-      throw new UnauthorizedException();
+    catch (err) {
+      if (err instanceof ForbiddenException) {
+        throw err;
+      }
+      throw new UnauthorizedException('Invalid or expired token');
     }
     return true;
   }

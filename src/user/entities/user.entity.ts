@@ -30,6 +30,8 @@ export class User {
   bio?: string;
   @Column({type: 'enum', enum: UserRolesEnum , default: UserRolesEnum.Student})
   role: UserRolesEnum;
+  @Column({type: 'timestamp', nullable: true})
+  verifiedAt?: Date | null;
   @CreateDateColumn()
   createdAt: Date;
   @UpdateDateColumn()

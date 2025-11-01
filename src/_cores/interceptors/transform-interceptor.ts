@@ -27,6 +27,10 @@ export class TransformDtoInterceptor<T> implements NestInterceptor {
       .handle()
       .pipe(
         map((data) => {
+          // only Message
+          if (data && typeof data === 'object' && 'message' in data && Object.keys(data).length === 1) {
+            return data;
+          }
           // if data is empty
           if (data === null || data === undefined) {
             return { message: 'Success' };
