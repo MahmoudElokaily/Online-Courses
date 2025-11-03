@@ -20,7 +20,6 @@ export class AuthGuard implements CanActivate {
   async canActivate(
     context: ExecutionContext,
   ):  Promise<boolean>  {
-    console.log(1020);
     const request = context.switchToHttp().getRequest<Request>();
     const token = request.headers.authorization?.split(' ')[1];
     if (!token) {
@@ -36,7 +35,6 @@ export class AuthGuard implements CanActivate {
       } as IUserPayload;
 
       const user = await this.userService.findOneByUuid(decodedUser.uuid);
-      console.log(user);
       if (!user.verifiedAt) {
         throw new ForbiddenException('User account not verified');
       }

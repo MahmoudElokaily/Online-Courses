@@ -13,6 +13,8 @@ export class UserVerificationsEntity {
   token: string;
   @Column({unique: true})
   uuid: string;
+  @Column({type:'enum' , enum: ["verify" , 'forget'] , default: 'verify'})
+  type: string;
   @Column()
   expires_at: Date;
 }
