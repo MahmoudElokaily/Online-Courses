@@ -15,12 +15,12 @@ export class ResourceService {
     private readonly userRepository: Repository<User>,
   ) {}
 
-  async getResource(resourceType: string, resourceId: number){
+  async getResource(resourceType: string, resourceId: string){
     switch(resourceType){
       case 'users': {
-        const user = await this.userRepository.findOneBy({id: resourceId});
+        const user = await this.userRepository.findOneBy({uuid: resourceId});
         if (!user) throw new NotFoundException('User not found');
-        return user.id.toString();
+        return user.uuid.toString();
       }
       default:
         throw new Error('Resource not found');
