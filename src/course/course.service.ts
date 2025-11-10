@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
 import { UserRolesEnum } from '../_cores/enums/user-roles.enum';
@@ -47,19 +47,97 @@ export class CourseService {
     return this.courseRepository.save(course);
   }
 
-  findAll() {
-    return `This action returns all course`;
+  async findAll(limit: number , cursor?: string, search?: string) {
+    // make max limit be 500
+    limit = Math.min(limit, 500);
+    const query = this.courseRepository
+      .createQueryBuilder('course')
+      .orderBy('createdAt', 'DESC')
+      .limit(limit + 1)
+    // search if exit
+    if (search) {
+      query.andWhere(
+        '(course.name LIKE :search OR course.description LIKE :search)', {search: `%${search}%`},
+      );
+    }
+    // pagination
+    if (cursor) {
+      query.andWhere('course.createdAt < :cursor', { cursor: new Date(cursor) });
+    }
+    // get items
+    const courses = await query.getMany();
+
+    // check next page
+    const hasNextPage = courses.length > limit;
+    // return only limit
+    const items = hasNextPage ? courses.slice(0, limit) : courses;
+    return {
+      items: items,
+      hasNextPage,
+      cursor: hasNextPage ? items[items.length - 1].createdAt : null,
+    }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} course`;
+  async findOneUsingUuid(uuid: string) {
+    const course = await this.courseRepository.findOneBy({uuid});
+    if (!course) throw new NotFoundException("Course not found");
+    return course;
   }
 
-  update(id: number, updateCourseDto: UpdateCourseDto) {
-    return `This action updates a #${id} course`;
+  async update(uuid: string, updateCourseDto: UpdateCourseDto , cover: Express.Multer.File) {
+    const course = await this.findOneUsingUuid(uuid);
+    // update other fields
+    const courseCover = course.courseCover;
+    Object.assign(course, updateCourseDto);
+    if (cover){
+        const cleanName = course.name.replace(/\s+/g, '-');
+        const fullName = `${Date.now()}-${cleanName}`;
+        const uploadDir = path.join(__dirname , '..' , '..' , 'uploads' , 'courses' ,   fullName);
+        // if file doesn't exit
+        if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+        // file name
+        const fileName = `${Date.now()}${path.extname(cover.originalname)}`;
+        const filePath = path.join(uploadDir, fileName);
+
+        // save photo
+        fs.writeFileSync(filePath, cover.buffer);
+        // remove old avatar
+        if (courseCover) {
+          const oldCoverPath = path.join(__dirname, '..', '..', courseCover);
+          const folderPath = path.dirname(oldCoverPath);
+
+          if (fs.existsSync(folderPath)) {
+            try {
+              fs.rmSync(folderPath, { recursive: true, force: true });
+            } catch (err) {
+              console.warn('⚠️ Failed to delete folder:', err.message);
+            }
+          } else {
+            console.log('⚠️ Folder does not exist:', folderPath);
+          }
+        }
+      // save to user
+      course.courseCover = `/uploads/courses/${fullName}/${fileName}`;
+    }
+    return this.courseRepository.save(course);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} course`;
+  async remove(uuid: string) {
+    const course = await this.findOneUsingUuid(uuid);
+    if (course.courseCover) {
+      const oldCoverPath = path.join(__dirname, '..', '..', course.courseCover);
+      const folderPath = path.dirname(oldCoverPath);
+
+      if (fs.existsSync(folderPath)) {
+        try {
+          fs.rmSync(folderPath, { recursive: true, force: true });
+        } catch (err) {
+          console.warn('⚠️ Failed to delete folder:', err.message);
+        }
+      } else {
+        console.log('⚠️ Folder does not exist:', folderPath);
+      }
+    }
+    await this.courseRepository.remove(course);
   }
 }
