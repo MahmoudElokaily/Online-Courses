@@ -6,7 +6,6 @@ import {
   Get,
   HttpStatus,
   Param,
-  ParseFilePipe,
   ParseFilePipeBuilder,
   ParseIntPipe,
   Patch,

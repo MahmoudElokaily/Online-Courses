@@ -4,11 +4,13 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { UserRolesEnum } from '../../_cores/enums/user-roles.enum';
 import { v4 as uuidv4 } from 'uuid';
+import { Course } from '../../course/entities/course.entity';
 
 @Entity('users')
 export class User {
@@ -32,6 +34,8 @@ export class User {
   role: UserRolesEnum;
   @Column({type: 'timestamp', nullable: true})
   verifiedAt?: Date | null;
+  @OneToMany(() => Course, course => course.instructor)
+  courses: Course[];
   @CreateDateColumn()
   createdAt: Date;
   @UpdateDateColumn()
