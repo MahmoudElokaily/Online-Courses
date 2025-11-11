@@ -30,7 +30,6 @@ export class RoleGuard implements CanActivate {
       context.getClass(),
     ]);
     if (!requiredRoles || requiredRoles.length === 0) return true;
-
     // ✅ Admin access
     if (
       requiredRoles.includes(UserRolesEnum.Admin) &&
@@ -48,8 +47,8 @@ export class RoleGuard implements CanActivate {
     ) {
 
       const resourceUuid = request.params.uuid;
-      if (!resourceUuid) return true;
 
+      if (!resourceUuid) return true;
 
       const resourceOwnerUuid = await this.resourceService.getResource(resourceType, resourceUuid);
       if (!resourceOwnerUuid)

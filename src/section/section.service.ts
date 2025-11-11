@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateSectionDto } from './dto/create-section.dto';
 import { UpdateSectionDto } from './dto/update-section.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -14,12 +14,12 @@ export class SectionService {
     private readonly courseService: CourseService,
   ) {
   }
-  async create(createSectionDto: CreateSectionDto) {
-    const { title, course } = createSectionDto;
-    const getCourse = await this.courseService.findOneUsingUuid(course);
+  async create(uuid:string , createSectionDto: CreateSectionDto) {
+    const { title } = createSectionDto;
+    const course = await this.courseService.findOneUsingUuid(uuid);
     const savedCourse = this.sectionRepository.create({
       title,
-      course: getCourse,
+      course,
     });
     await this.sectionRepository.save(savedCourse);
   }
@@ -28,8 +28,10 @@ export class SectionService {
     return `This action returns all section`;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} section`;
+  async findOne(uuid: string) {
+    const section = await this.sectionRepository.findOneBy({ uuid });
+    if (!section) throw new NotFoundException("Section not found");
+    return section;
   }
 
   update(id: number, updateSectionDto: UpdateSectionDto) {

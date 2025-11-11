@@ -7,6 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../user/entities/user.entity';
 import { Repository } from 'typeorm';
 import { Course } from '../course/entities/course.entity';
+import { Section } from '../section/entities/section.entity';
 
 
 @Injectable()
@@ -16,6 +17,8 @@ export class ResourceService {
     private readonly userRepository: Repository<User>,
     @InjectRepository(Course)
     private readonly courseRepository: Repository<Course>,
+    @InjectRepository(Section)
+    private readonly sectionRepository: Repository<Section>,
   ) {}
 
   async getResource(resourceType: string, resourceId: string){
@@ -25,11 +28,13 @@ export class ResourceService {
         if (!user) throw new NotFoundException('User not found');
         return user.uuid.toString();
       }
-      case 'courses': {
+      case 'courses':
+      case 'sections': {
         const course = await this.courseRepository.findOne({
           where: {uuid: resourceId},
           relations: ['instructor'],
         });
+        if (!course) throw new NotFoundException('Course not found');
         return course?.instructor.uuid.toString();
       }
       default:
