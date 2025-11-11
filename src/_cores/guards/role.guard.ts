@@ -18,7 +18,6 @@ export class RoleGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-
     const request = context.switchToHttp().getRequest<Request>();
     const currentUser = request.currentUser;
     const resourceType = this.extractResource(request.path);
@@ -38,6 +37,7 @@ export class RoleGuard implements CanActivate {
       return true;
     }
 
+
     // ✅ Student & Instructor access only to their own resource
     if (
       (requiredRoles.includes(UserRolesEnum.Student) &&
@@ -50,7 +50,7 @@ export class RoleGuard implements CanActivate {
 
       if (!resourceUuid) return true;
 
-      const resourceOwnerUuid = await this.resourceService.getResource(resourceType, resourceUuid);
+      const resourceOwnerUuid = await this.resourceService.getResource(resourceType, resourceUuid , request.method);
       if (!resourceOwnerUuid)
         throw new BadRequestException('Resource not found');
 

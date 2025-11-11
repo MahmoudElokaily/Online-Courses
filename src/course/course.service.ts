@@ -1,7 +1,11 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  forwardRef,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateCourseDto } from './dto/create-course.dto';
 import { UpdateCourseDto } from './dto/update-course.dto';
-import { UserRolesEnum } from '../_cores/enums/user-roles.enum';
 import { IUserPayload } from '../_cores/types/express';
 import { Repository } from 'typeorm';
 import { Course } from './entities/course.entity';
@@ -9,7 +13,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { UserService } from '../user/user.service';
 import path from 'node:path';
 import fs from 'node:fs';
-import { Roles } from '../_cores/decorators/role.decorator';
+import { SectionService } from '../section/section.service';
 
 @Injectable()
 export class CourseService {
@@ -17,6 +21,8 @@ export class CourseService {
     @InjectRepository(Course)
     private readonly courseRepository: Repository<Course>,
     private readonly userService: UserService,
+    @Inject(forwardRef(() => SectionService))
+    private readonly sectionService: SectionService,
   ) {}
   async create(
     createCourseDto: CreateCourseDto,
@@ -165,7 +171,9 @@ export class CourseService {
         console.log('⚠️ Folder does not exist:', folderPath);
       }
     }
+    // remove sections
+    await this.sectionService.removeSections(course.id);
     await this.courseRepository.remove(course);
-    // TODO :: remove sections of course and videos
+    return { message: "Course deleted successfully." };
   }
 }

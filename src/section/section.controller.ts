@@ -11,7 +11,6 @@ import {
 } from '@nestjs/common';
 import { SectionService } from './section.service';
 import { CreateSectionDto } from './dto/create-section.dto';
-import { UpdateSectionDto } from './dto/update-section.dto';
 import { RoleGuard } from '../_cores/guards/role.guard';
 import { AuthGuard } from '../_cores/guards/auth.guard';
 import { UserRolesEnum } from '../_cores/enums/user-roles.enum';
@@ -31,9 +30,9 @@ export class SectionController {
     return this.sectionService.create(uuid , createSectionDto);
   }
 
-  @Get()
-  findAll() {
-    return this.sectionService.findAll();
+  @Get('course/:uuid')
+  findAll(@Param('uuid' , ParseUUIDPipe) uuid: string) {
+    return this.sectionService.findAll(uuid);
   }
 
   @Get(':uuid')
@@ -41,13 +40,15 @@ export class SectionController {
     return this.sectionService.findOne(uuid);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateSectionDto: UpdateSectionDto) {
-    return this.sectionService.update(+id, updateSectionDto);
+  @Patch(':uuid')
+  @Roles([UserRolesEnum.Admin , UserRolesEnum.Instructor])
+  update(@Param('uuid') uuid: string, @Body() updateSectionDto: CreateSectionDto) {
+    return this.sectionService.update(uuid, updateSectionDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.sectionService.remove(+id);
+  @Roles([UserRolesEnum.Admin , UserRolesEnum.Instructor])
+  remove(@Param('uuid') uuid: string) {
+    return this.sectionService.remove(uuid);
   }
 }

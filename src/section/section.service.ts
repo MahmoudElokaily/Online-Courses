@@ -1,6 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  forwardRef,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateSectionDto } from './dto/create-section.dto';
-import { UpdateSectionDto } from './dto/update-section.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Section } from './entities/section.entity';
 import { Repository } from 'typeorm';
@@ -11,6 +15,7 @@ export class SectionService {
   constructor(
     @InjectRepository(Section)
     private readonly sectionRepository: Repository<Section>,
+    @Inject(forwardRef(() => CourseService))
     private readonly courseService: CourseService,
   ) {
   }
@@ -24,8 +29,12 @@ export class SectionService {
     await this.sectionRepository.save(savedCourse);
   }
 
-  findAll() {
-    return `This action returns all section`;
+  async findAll(uuid: string) {
+    const course = await this.courseService.findOneUsingUuid(uuid);
+    return await this.sectionRepository.find({
+      where: { course: { id: course.id } },
+      order: { createdAt: 'ASC' },
+    });
   }
 
   async findOne(uuid: string) {
@@ -34,11 +43,20 @@ export class SectionService {
     return section;
   }
 
-  update(id: number, updateSectionDto: UpdateSectionDto) {
-    return `This action updates a #${id} section`;
+  async update(uuid: string, updateSectionDto: CreateSectionDto) {
+    const section = await this.findOne(uuid);
+    Object.assign(section, updateSectionDto);
+    return this.sectionRepository.save(section);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} section`;
+  async remove(uuid: string) {
+    const section = await this.findOne(uuid);
+    await this.sectionRepository.remove(section);
+    // TODO Remove videos also
+    return { message: 'Section deleted successfully' };
+  }
+
+  removeSections(courseId: number) {
+    return this.sectionRepository.delete({ course: { id: courseId } });
   }
 }
