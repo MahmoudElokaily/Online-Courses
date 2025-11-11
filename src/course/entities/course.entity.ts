@@ -4,11 +4,13 @@ import {
   CreateDateColumn,
   Entity,
   ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import { User } from '../../user/entities/user.entity';
+import { Section } from '../../section/entities/section.entity';
 
 @Entity('courses')
 export class Course {
@@ -26,6 +28,10 @@ export class Course {
   totalLectures: number;
   @ManyToOne(() => User, user => user.courses, { onDelete: 'CASCADE' })
   instructor: User;
+  @OneToMany(() => Section, section => section.course, {
+    cascade: true,
+  })
+  sections: Section[];
   @Column({nullable: true})
   courseCover?: string;
   @Column('decimal', { precision: 3, scale: 2, default: 0.00 })

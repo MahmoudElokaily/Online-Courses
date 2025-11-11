@@ -91,6 +91,7 @@ export class CourseController {
     return this.courseService.update(uuid, updateCourseDto , cover);
   }
 
+  @Roles([UserRolesEnum.Admin, UserRolesEnum.Instructor])
   @Delete(':uuid')
   remove(@Param('uuid' , ParseUUIDPipe) id: string) {
     return this.courseService.remove(id);

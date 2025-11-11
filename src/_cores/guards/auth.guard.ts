@@ -33,7 +33,6 @@ export class AuthGuard implements CanActivate {
         email: decodedUser.email,
         role: decodedUser.role,
       } as IUserPayload;
-
       const user = await this.userService.findOneByUuid(decodedUser.uuid);
       if (!user.verifiedAt) {
         throw new ForbiddenException('User account not verified');

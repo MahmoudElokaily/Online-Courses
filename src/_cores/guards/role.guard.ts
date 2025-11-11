@@ -18,18 +18,17 @@ export class RoleGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
+
     const request = context.switchToHttp().getRequest<Request>();
     const currentUser = request.currentUser;
     const resourceType = this.extractResource(request.path);
     if (!resourceType) {
       throw new BadRequestException('Resource type not found');
     }
-
     const requiredRoles = this.reflector.getAllAndOverride<UserRolesEnum[]>('roles', [
       context.getHandler(),
       context.getClass(),
     ]);
-
     if (!requiredRoles || requiredRoles.length === 0) return true;
 
     // ✅ Admin access
@@ -40,14 +39,16 @@ export class RoleGuard implements CanActivate {
       return true;
     }
 
-    // ✅ Student access only to their own resource
+    // ✅ Student & Instructor access only to their own resource
     if (
-      requiredRoles.includes(UserRolesEnum.Student) &&
-      currentUser?.role === UserRolesEnum.Student
+      (requiredRoles.includes(UserRolesEnum.Student) &&
+      currentUser?.role === UserRolesEnum.Student) ||
+      (requiredRoles.includes(UserRolesEnum.Instructor) &&
+      currentUser?.role === UserRolesEnum.Instructor)
     ) {
-      const resourceUuid = request.params.uuid || request.params.id;
-      if (!resourceUuid)
-        throw new BadRequestException('Resource identifier not found');
+
+      const resourceUuid = request.params.uuid;
+      if (!resourceUuid) return true;
 
 
       const resourceOwnerUuid = await this.resourceService.getResource(resourceType, resourceUuid);
@@ -58,6 +59,7 @@ export class RoleGuard implements CanActivate {
 
       throw new ForbiddenException('You can only access your own resources');
     }
+
 
     throw new ForbiddenException("You don't have enough permissions");
   }
