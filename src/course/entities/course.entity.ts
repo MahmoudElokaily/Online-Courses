@@ -11,6 +11,7 @@ import {
 import { v4 as uuidv4 } from 'uuid';
 import { User } from '../../user/entities/user.entity';
 import { Section } from '../../section/entities/section.entity';
+import { Video } from '../../video/entities/video.entity';
 
 @Entity('courses')
 export class Course {
@@ -36,6 +37,8 @@ export class Course {
   courseCover?: string;
   @Column('decimal', { precision: 3, scale: 2, default: 0.00 })
   rating: number;
+  @OneToMany(() => Video, video => video.course)
+  videos: Video[];
   @CreateDateColumn()
   createdAt: Date;
   @UpdateDateColumn()

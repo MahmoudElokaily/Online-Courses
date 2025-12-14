@@ -4,11 +4,12 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from '../user/entities/user.entity';
 import { Course } from '../course/entities/course.entity';
 import { Section } from '../section/entities/section.entity';
+import { Video } from '../video/entities/video.entity';
 
 @Global()
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User , Course , Section]),
+    TypeOrmModule.forFeature([User , Course , Section , Video]),
   ],
   providers: [ResourceService],
   exports: [ResourceService],

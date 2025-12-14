@@ -5,37 +5,44 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
-  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { v4 as uuidv4 } from 'uuid';
+import { Section } from '../../section/entities/section.entity';
 import { Course } from '../../course/entities/course.entity';
-import { Video } from '../../video/entities/video.entity';
+import { v4 as uuidv4 } from 'uuid';
 
-@Entity('sections')
-export class Section {
+@Entity()
+export class Video {
   @PrimaryGeneratedColumn()
   id: number;
   @Column({ type: 'uuid' })
   uuid: string;
   @Column()
   title: string;
-  @Column({ type: 'int', default: 0 })
-  totalLectures: number;
-  @Column({ type: 'int', default: 0 })
+  @Column({ nullable: true })
   time: number;
-  @ManyToOne(() => Course, course => course.sections, {
+  @ManyToOne(() => Section, section => section.videos, {
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'section_id' })
+  section: Section;
+
+  @ManyToOne(() => Course, course => course.videos, {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'course_id' })
   course: Course;
-  @OneToMany(() => Video, video => video.section)
-  videos: Video[];
+
+  @Column()
+  videoUrl: string;
+  @Column({ type: 'int', default: 0 })
+  size: number;
   @CreateDateColumn()
   createdAt: Date;
   @UpdateDateColumn()
   updatedAt: Date;
+
   @BeforeInsert()
   generateUUID() {
     this.uuid = uuidv4();

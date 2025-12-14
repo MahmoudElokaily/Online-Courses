@@ -70,7 +70,8 @@ export class CourseService {
     limit = Math.min(limit, 500);
     const query = this.courseRepository
       .createQueryBuilder('course')
-      .orderBy('createdAt', 'DESC')
+      .leftJoinAndSelect('course.sections', 'sections')
+      .orderBy('course.createdAt', 'DESC')
       .limit(limit + 1);
     // search if exit
     if (search) {
@@ -87,7 +88,6 @@ export class CourseService {
     }
     // get items
     const courses = await query.getMany();
-
     // check next page
     const hasNextPage = courses.length > limit;
     // return only limit
@@ -100,7 +100,10 @@ export class CourseService {
   }
 
   async findOneUsingUuid(uuid: string) {
-    const course = await this.courseRepository.findOneBy({ uuid });
+    const course = await this.courseRepository.findOne({
+      where: { uuid },
+      relations: ['sections'],
+    });
     if (!course) throw new NotFoundException('Course not found');
     return course;
   }

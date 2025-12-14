@@ -7,18 +7,21 @@ import { UserModule } from './user/user.module';
 import { AuthModule } from './auth/auth.module';
 import { ResourceModule } from './resource/resource.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
-import { join } from 'path';
 import { CourseModule } from './course/course.module';
 import { SectionModule } from './section/section.module';
+import { VideoModule } from './video/video.module';
+import { WorkerModule } from './worker/worker.module';
+import { BullModule } from '@nestjs/bull';
+import path from 'node:path';
 
 @Module({
   imports: [
+    ServeStaticModule.forRoot({
+      rootPath: path.join(process.cwd(), 'uploads'),
+      serveRoot: '/uploads',
+    }),
     ConfigModule.forRoot({
       isGlobal: true, // يبقى متاح لكل modules
-    }),
-    ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'uploads'),
-      serveRoot: '/uploads',
     }),
     TypeOrmModule.forRoot({
       type: 'mysql',
@@ -35,6 +38,14 @@ import { SectionModule } from './section/section.module';
     ResourceModule,
     CourseModule,
     SectionModule,
+    VideoModule,
+    WorkerModule,
+    BullModule.forRoot({
+      redis: {
+        host: '127.0.0.1',
+        port: 6379,
+      },
+    }),
   ],
   controllers: [AppController],
   providers: [AppService],

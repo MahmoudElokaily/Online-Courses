@@ -17,7 +17,16 @@ async function bootstrap() {
     prefix: 'api/v',
     defaultVersion: '1'
   });
-  app.use('/uploads', express.static(join(__dirname, '..', 'uploads')));
-  await app.listen(process.env.PORT ?? 3000);
+  app.use(
+    '/uploads',
+    express.static(join(process.cwd(), 'uploads'), {
+      setHeaders: (res, filePath) => {
+        if (filePath.endsWith('.mp4')) {
+          res.setHeader('Content-Type', 'video/mp4');
+          res.setHeader('Accept-Ranges', 'bytes');
+        }
+      },
+    }),
+  );  await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();

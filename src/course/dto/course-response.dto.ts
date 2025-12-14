@@ -1,4 +1,5 @@
-import { Expose, Transform } from 'class-transformer';
+import { Expose, Transform, Type } from 'class-transformer';
+import { SectionResponseDto } from '../../section/dto/section-response.dto';
 
 export class CourseResponseDto {
   @Expose()
@@ -16,6 +17,9 @@ export class CourseResponseDto {
   courseCover: string;
   @Expose()
   rating: string;
+  @Expose()
+  @Type(() => SectionResponseDto)
+  sections: SectionResponseDto[];
   @Expose()
   createdAt: string;
   @Expose()
