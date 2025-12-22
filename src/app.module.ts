@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module  } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -13,6 +13,8 @@ import { VideoModule } from './video/video.module';
 import { WorkerModule } from './worker/worker.module';
 import { BullModule } from '@nestjs/bull';
 import path from 'node:path';
+import { RedisService } from './redis/redis.service';
+
 
 @Module({
   imports: [
@@ -48,6 +50,6 @@ import path from 'node:path';
     }),
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, RedisService],
 })
 export class AppModule {}

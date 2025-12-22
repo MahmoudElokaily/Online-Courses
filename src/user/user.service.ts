@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -8,12 +8,15 @@ import * as bcrypt from 'bcrypt';
 import { IUserPayload } from '../_cores/types/express';
 import path from 'node:path';
 import * as fs from 'node:fs';
+import { RedisService } from '../redis/redis.service';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
+    private readonly redisService: RedisService,
+
   ) {}
   create(data: RegisterDto) {
     const user = this.userRepository.create(data);
@@ -30,8 +33,30 @@ export class UserService {
 
   async findAll(limit: number, cursor: string) {
     limit = Math.min(limit, 500);
+    // caching version
+    const versionKey = 'users:list:version';
+    const version = (await this.redisService.get<number>(versionKey)) ?? 1;
+    // cache key
+    const cacheKey = `users:list:v${version}:limit=${limit}:cursor=${cursor ?? 'initial'}`;
+    // get from cache
+    const cached = await this.redisService.get(cacheKey);
+    if (cached) {
+      return cached;
+    }
+    // DB query
     const query = this.userRepository
       .createQueryBuilder('user')
+      .select([
+        'user.id',
+        'user.uuid',
+        'user.name',
+        'user.email',
+        'user.avatar',
+        'user.bio',
+        'user.phoneNumber',
+        'user.verifiedAt',
+        'user.createdAt',
+      ])
       .orderBy('user.createdAt', 'ASC')
       .addOrderBy('user.id', 'ASC')
       .take(limit + 1);
@@ -61,11 +86,12 @@ export class UserService {
     // remove one extra
     if (hasNextPage) users.pop();
 
-    return {
-      items: users,
-      hasNextPage,
-      cursor: nextCursor,
-    };
+    const result = { items: users, hasNextPage, cursor: nextCursor };
+
+    // save to cache
+    await this.redisService.set(cacheKey, result, 120);
+
+    return result;
   }
 
   async findOneByUuid(uuid: string) {
