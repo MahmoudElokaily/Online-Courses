@@ -10,6 +10,7 @@ import { Course } from '../course/entities/course.entity';
 import { Section } from '../section/entities/section.entity';
 import { VideoResponseDto } from '../video/dto/video-response.dto';
 import { Video } from '../video/entities/video.entity';
+import { Comment } from '../comment/entities/comment.entity';
 
 
 @Injectable()
@@ -23,18 +24,20 @@ export class ResourceService {
     private readonly sectionRepository: Repository<Section>,
     @InjectRepository(Video)
     private readonly videoRepository: Repository<Video>,
+    @InjectRepository(Comment)
+    private readonly commentRepository: Repository<Comment>,
   ) {}
 
-  async getResource(resourceType: string, resourceId: string, method?: string) {
-    switch(resourceType){
+  async getResource(resourceType: string, resourceId: string, method?: string , currentUser: any = {}) {
+    switch (resourceType) {
       case 'users': {
-        const user = await this.userRepository.findOneBy({uuid: resourceId});
+        const user = await this.userRepository.findOneBy({ uuid: resourceId });
         if (!user) throw new NotFoundException('User not found');
         return user.uuid.toString();
       }
       case 'courses': {
         const course = await this.courseRepository.findOne({
-          where: {uuid: resourceId},
+          where: { uuid: resourceId },
           relations: ['instructor'],
         });
         if (!course) throw new NotFoundException('Course not found');
@@ -78,6 +81,19 @@ export class ResourceService {
         }
 
         return video.section.course.instructor.uuid.toString();
+      }
+      case 'comments': {
+        const comment = await this.commentRepository.findOne({
+          where: { uuid: resourceId },
+          relations: [
+            'user',
+            'video',
+            'video.course',
+            'video.course.instructor'
+          ],
+        });
+        if (!comment) throw new NotFoundException('Comment not found');
+        return comment.user.uuid.toString() === currentUser.uuid.toString() ? comment.user.uuid.toString() : comment.video.course.instructor.uuid.toString();
       }
       default:
         throw new Error('Resource not found');

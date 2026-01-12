@@ -28,9 +28,7 @@ export class VideoService {
     createVideoDto: CreateVideoDto,
     documents: Express.Multer.File[],
   ) {
-    const course = await this.courseService.findOneUsingUuid(
-      uuid
-    );
+    const course = await this.courseService.findOneUsingUuid(uuid);
     const section = await this.sectionService.findOne(createVideoDto.section);
     if (course.uuid !== section.course.uuid) {
       throw new BadRequestException('Section does not belong to this course');
@@ -87,11 +85,20 @@ export class VideoService {
         Operations.SUB,
       );
     }
-    await this.sectionService.updateLecture(
-      sectionUuid,
-      Operations.SUB,
-    );
+    await this.sectionService.updateLecture(sectionUuid, Operations.SUB);
     await this.videoRepository.remove(video);
+  }
 
+  async findOneByUuid(uuid: string) {
+    const video = await this.videoRepository.findOneBy({ uuid });
+    if (!video) throw new NotFoundException('Video not found');
+    return video;
+  }
+
+  async findVideoByUuid(uuid: string) {
+    return this.videoRepository.findOne({
+      where: { uuid },
+      relations: ['section' , 'comments' ],
+    });
   }
 }

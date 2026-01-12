@@ -16,8 +16,6 @@ export class UserResponseDto {
   @Expose()
   bio: string | null;
   @Expose()
-  role: UserRolesEnum;
-  @Expose()
   createdAt: Date;
   @Expose()
   updatedAt: Date;

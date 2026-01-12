@@ -14,6 +14,7 @@ import { WorkerModule } from './worker/worker.module';
 import { BullModule } from '@nestjs/bull';
 import path from 'node:path';
 import { RedisService } from './redis/redis.service';
+import { CommentModule } from './comment/comment.module';
 
 
 @Module({
@@ -48,6 +49,7 @@ import { RedisService } from './redis/redis.service';
         port: 6379,
       },
     }),
+    CommentModule,
   ],
   controllers: [AppController],
   providers: [AppService, RedisService],

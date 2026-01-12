@@ -20,5 +20,6 @@ import { UserModule } from '../user/user.module';
   ],
   controllers: [VideoController],
   providers: [VideoService],
+  exports: [VideoService]
 })
 export class VideoModule {}
