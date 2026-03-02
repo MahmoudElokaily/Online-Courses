@@ -1,0 +1,38 @@
+name: main.yml
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+      - uses: actions/checkout@v6.0.2
+
+      - name: Setup Node
+        uses: actions/setup-node@v4.3.2
+        with:
+          node-version: 25
+
+      - name: Install pnpm
+        run: npm i -g pnpm
+
+      - name: Install Dependencies
+        run: pnpm i
+
+      - name: Install pnpm
+        run: npm i -g pnpm
+
+      - name: Login to dockerhub
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+      - name: Build Docker Image
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/online-course:latest .
+
+      - name: Push Docker Image
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/online-course:latest
+

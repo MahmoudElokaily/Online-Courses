@@ -1,0 +1,31 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Install') {
+            steps {
+                sh 'npm i -g pnpm'
+                sh 'pnpm i'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                sh 'npm run test'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                sh 'docker build -t online-course:test'
+            }
+        }
+
+    }
+}

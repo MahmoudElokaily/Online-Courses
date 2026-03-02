@@ -50,7 +50,12 @@ export class RoleGuard implements CanActivate {
 
 
       if (!resourceUuid) return true;
-      const resourceOwnerUuid = await this.resourceService.getResource(resourceType, resourceUuid , request.method , request.currentUser);
+      const resourceOwnerUuid = await this.resourceService.getResource(
+        resourceType,
+        Array.isArray(resourceUuid) ? resourceUuid[0] : resourceUuid,
+        request.method,
+        request.currentUser,
+      );
       if (!resourceOwnerUuid)
         throw new BadRequestException('Resource not found');
 

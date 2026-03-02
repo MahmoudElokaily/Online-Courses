@@ -28,7 +28,7 @@ import { CommentModule } from './comment/comment.module';
     }),
     TypeOrmModule.forRoot({
       type: 'mysql',
-      host: 'localhost',
+      host: process.env.DB_HOST || 'localhost',
       port: parseInt(process.env.DB_PORT ?? '3306', 10),
       username: process.env.DB_USERNAME ?? 'root',
       password: process.env.DB_PASSWORD ?? '27112000',
@@ -45,8 +45,8 @@ import { CommentModule } from './comment/comment.module';
     WorkerModule,
     BullModule.forRoot({
       redis: {
-        host: '127.0.0.1',
-        port: 6379,
+        host: process.env.REDIS_HOST || 'localhost',
+        port: parseInt(process.env.REDIS_PORT ?? '6379', 10),
       },
     }),
     CommentModule,
