@@ -9,6 +9,7 @@ export class AppController {
   health() {
     return {
       status: 'ok',
+      message: 'Server is running on Google Cloud',
       timestamp: new Date().toISOString(),
     };
   }
