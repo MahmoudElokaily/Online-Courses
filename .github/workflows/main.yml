@@ -27,12 +27,31 @@ jobs:
       - name: Install pnpm
         run: npm i -g pnpm
 
-      - name: Login to dockerhub
+      - name: Login to docker hub
         run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
       - name: Build Docker Image
-        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/online-course:latest .
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/online-course:${{ github.sha }} .
 
       - name: Push Docker Image
-        run: docker push ${{ secrets.DOCKER_USERNAME }}/online-course:latest
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/online-course:${{ github.sha }}
 
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v3
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Get GKE credentials
+        run: |
+          gcloud container clusters get-credentials online-course-cluster \
+            --zone us-central1-a \
+            --project project-1e378a17-29c4-42b8-934
+          
+      - name: Deploy to GKE
+        run: |
+          IMAGE=${{ secrets.DOCKER_USERNAME }}/online-course:${{ github.sha }}
+          kubectl set image deployment/online-course online-course=$IMAGE
+          
