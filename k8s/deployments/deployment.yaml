@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: online-course
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: online-course
+  template:
+    metadata:
+      labels:
+        app: online-course
+    spec:
+      containers:
+        - name: online-course
+          image: mahmoudelokaily/online-course
+          ports:
+            - containerPort: 3000
+          env:
+            - name: DB_HOST
+              value: db
+            - name: DB_PORT
+              value: "3306"
+            - name: DB_USERNAME
+              value: root
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: MYSQL_ROOT_PASSWORD
+            - name: DB_NAME
+              value: online_course
+            - name: REDIS_HOST
+              value: redis
+            - name: REDIS_PORT
+              value: "6379"
+            - name: JWT_SECRET
+              value: a96416bd2fc9746e2f6d71907a8b450f
+            - name: JWT_EXPIRED_IN
+              value: 7d
+          readinessProbe:
+            httpGet:
+              path: /api/v1/health
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+
